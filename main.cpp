@@ -1,10 +1,7 @@
 #include <windows.h>
-#include <iostream>
 #include <stdexcept>
 #include "renderer.h"
 #include "shared_memory.h"
-#include "distortion.h"
-
 SharedMemoryData sharedMemoryData;
 float zoomFactor = 2.0f;
 bool useDistortion = true;
@@ -63,7 +60,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     WNDCLASSEX wc = { sizeof(WNDCLASSEX), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(NULL), NULL, NULL, NULL, NULL, "BC4Viewer", NULL };
     RegisterClassEx(&wc);
-    HWND hWnd = CreateWindow(wc.lpszClassName, "PSVR2 Camera Viewer", WS_OVERLAPPEDWINDOW, 100, 100, IMAGE_WIDTH, IMAGE_HEIGHT, NULL, NULL, wc.hInstance, NULL);
+    HWND hWnd = CreateWindow(wc.lpszClassName, "PSVR2 Camera Viewer", WS_OVERLAPPEDWINDOW, 100, 100, 800, 600, NULL, NULL, wc.hInstance, NULL);
 
     if (FAILED(InitDevice(hWnd, sharedMemoryData, zoomFactor))) {
         CleanupDevice();

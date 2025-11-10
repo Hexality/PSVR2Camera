@@ -1,13 +1,19 @@
 #include "renderer.h"
 #include "distortion.h"
 #include <d3dcompiler.h>
-#include <iostream>
+#include <debugapi.h>
+#include <string>
 
 using Microsoft::WRL::ComPtr;
 
-const int IMAGE_WIDTH = 1016 * 2; // Changed to double width
-const int IMAGE_HEIGHT = 1024;
-const size_t BC4_DATA_SIZE = (1016 * 1024) / 2; // BC4 is 4 bits per pixel
+const int IMAGE_WIDTH = 1016;
+const int IMAGE_HEIGHT = 1016;
+
+// Texture is 1024 by 1024, but the real image is actually 1016x1016
+const int TEXTURE_WIDTH = 1024;
+const int TEXTURE_HEIGHT = 1024;
+
+const size_t BC4_DATA_SIZE = (1024 * 1024) / 2; // BC4 is 4 bits per pixel
 
 DisplayMode g_displayMode = DisplayMode::SideBySide;
 
@@ -39,7 +45,7 @@ void Resize(UINT width, UINT height)
         g_pSwapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
         
         ComPtr<ID3D11Texture2D> pBuffer;
-        g_pSwapChain->GetBuffer(0, __uuidof( ID3D11Texture2D), &pBuffer);
+        g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), &pBuffer);
 
         g_pd3dDevice->CreateRenderTargetView( pBuffer.Get(), NULL, &g_pRenderTargetView);
 
@@ -61,11 +67,11 @@ void UpdateMeshes(SharedMemoryData& sharedMemoryData, float zoomFactor, bool use
             }
     
             
-            create_undistortion_mesh(1016, 1016, zoomFactor, cam_intrinsics, cam_params, vertices, indices);
+            create_undistortion_mesh(TEXTURE_WIDTH, TEXTURE_HEIGHT, zoomFactor, cam_intrinsics, cam_params, vertices, indices);
         }
         else
         {
-            create_default_mesh(vertices, indices);
+            create_default_mesh(IMAGE_WIDTH, IMAGE_HEIGHT, TEXTURE_WIDTH, TEXTURE_HEIGHT, vertices, indices);
         }
 
         g_uUndistortIndexCount[i] = static_cast<UINT>(indices.size());
@@ -91,7 +97,7 @@ void UpdateMeshes(SharedMemoryData& sharedMemoryData, float zoomFactor, bool use
 HRESULT InitDevice(HWND hWnd, SharedMemoryData& sharedMemoryData, float zoomFactor) {
     DXGI_SWAP_CHAIN_DESC sd = {};
     sd.BufferCount = 1;
-    sd.BufferDesc.Width = IMAGE_WIDTH;
+    sd.BufferDesc.Width = IMAGE_WIDTH * 2; // Double width for side-by-side
     sd.BufferDesc.Height = IMAGE_HEIGHT;
     sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     sd.BufferDesc.RefreshRate.Numerator = 60;
@@ -162,8 +168,8 @@ HRESULT InitDevice(HWND hWnd, SharedMemoryData& sharedMemoryData, float zoomFact
     UpdateMeshes(sharedMemoryData, zoomFactor);
 
     D3D11_TEXTURE2D_DESC texDesc = {};
-    texDesc.Width = 1016;
-    texDesc.Height = 1016;
+    texDesc.Width = TEXTURE_WIDTH;
+    texDesc.Height = TEXTURE_WIDTH;
     texDesc.MipLevels = 1;
     texDesc.ArraySize = 1;
     texDesc.Format = DXGI_FORMAT_BC4_UNORM;
@@ -218,7 +224,7 @@ void Render(SharedMemoryData& sharedMemoryData) {
     float window_height = static_cast<float>(backBufferDesc.Height);
 
     D3D11_VIEWPORT vp;
-    float image_aspect_ratio = 1.0f; // 1016 / 1016
+    float image_aspect_ratio = 1.0f; // Cameras are square
     float viewport_width, viewport_height;
 
     if (g_displayMode == DisplayMode::SideBySide) {
@@ -234,7 +240,6 @@ void Render(SharedMemoryData& sharedMemoryData) {
     vp.MinDepth = 0.0f;
     vp.MaxDepth = 1.0f;
     vp.TopLeftY = (window_height - viewport_height) / 2.0f;
-
 
     UINT stride = sizeof(UndistortVertex);
     UINT offset = 0;

@@ -21,7 +21,7 @@ struct CameraIntrinsics {
 DirectX::XMFLOAT2 get_distorted_point(double x, double y, const CameraParameters& params);
 
 void create_undistortion_mesh(
-    int imageWidth, int imageHeight,
+    int textureWidth, int textureHeight,
     float zoomFactor,
     const CameraIntrinsics& intrinsics,
     const CameraParameters& params,
@@ -31,4 +31,7 @@ void create_undistortion_mesh(
     DWORD meshDensityY = 256
 );
 
-void create_default_mesh(std::vector<UndistortVertex>& out_vertices, std::vector<DWORD>& out_indices);
+void create_default_mesh(
+    int imageWidth, int imageHeight,
+    int textureWidth, int textureHeight,
+    std::vector<UndistortVertex>& out_vertices, std::vector<DWORD>& out_indices);

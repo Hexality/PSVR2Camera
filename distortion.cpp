@@ -56,7 +56,7 @@ DirectX::XMFLOAT2 get_distorted_point(double x, double y, const CameraParameters
 }
 
 void create_undistortion_mesh(
-    int imageWidth, int imageHeight,
+    int textureWidth, int textureHeight,
     float zoomFactor,
     const CameraIntrinsics& intrinsics,
     const CameraParameters& params,
@@ -72,8 +72,9 @@ void create_undistortion_mesh(
         for (DWORD i = 0; i <= meshDensityX; ++i) {
             float uOut = static_cast<float>(i) / meshDensityX;
             float vOut = static_cast<float>(j) / meshDensityY;
-            float pxOut = uOut * imageWidth;
-            float pyOut = vOut * imageHeight;
+
+            float pxOut = uOut * textureWidth;
+            float pyOut = vOut * textureHeight;
 
             UndistortVertex v;
             v.Pos.x = uOut * 2.0f - 1.0f;
@@ -88,8 +89,8 @@ void create_undistortion_mesh(
             float srcPx = static_cast<float>(distorted_norm.x * intrinsics.fx + intrinsics.cx);
             float srcPy = static_cast<float>(distorted_norm.y * intrinsics.fy + intrinsics.cy);
 
-            v.Tex.x = srcPx / imageWidth;
-            v.Tex.y = srcPy / imageHeight;
+            v.Tex.x = srcPx / textureWidth;
+            v.Tex.y = srcPy / textureHeight;
 
             outVertices.push_back(v);
         }
@@ -113,14 +114,21 @@ void create_undistortion_mesh(
     }
 }
 
-void create_default_mesh(std::vector<UndistortVertex>& outVertices, std::vector<DWORD>& outIndices) {
+void create_default_mesh(
+    int imageWidth, int imageHeight,
+    int textureWidth, int textureHeight,
+    std::vector<UndistortVertex>& outVertices, std::vector<DWORD>& outIndices) {
     outVertices.clear();
     outIndices.clear();
 
+    // Technically, sampling at 1.0 would mean sampling right at the edge, so subtracting by 1 is correct.
+    float maxTextureU = static_cast<float>(imageWidth-1) / static_cast<float>(textureWidth);
+    float maxTextureV = static_cast<float>(imageHeight-1) / static_cast<float>(textureHeight);
+
     outVertices.push_back({ {-1.0f, 1.0f, 0.0f}, {0.0f, 0.0f} });
-    outVertices.push_back({ {1.0f, 1.0f, 0.0f}, {1.0f, 0.0f} });
-    outVertices.push_back({ {-1.0f, -1.0f, 0.0f}, {0.0f, 1.0f} });
-    outVertices.push_back({ {1.0f, -1.0f, 0.0f}, {1.0f, 1.0f} });
+    outVertices.push_back({ {1.0f, 1.0f, 0.0f}, {maxTextureU, 0.0f} });
+    outVertices.push_back({ {-1.0f, -1.0f, 0.0f}, {0.0f, maxTextureV} });
+    outVertices.push_back({ {1.0f, -1.0f, 0.0f}, {maxTextureU, maxTextureV} });
 
     outIndices.push_back(0);
     outIndices.push_back(1);

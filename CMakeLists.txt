@@ -15,3 +15,9 @@ target_link_libraries(PSVR2Camera
     d3dcompiler.lib 
     dxgi.lib
 )
+
+set(CPACK_PACKAGE_NAME "PSVR2Camera")
+set(CPACK_PACKAGE_VERSION "0.2.0")
+set(CPACK_GENERATOR "ZIP")
+
+include(CPack)

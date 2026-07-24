@@ -16,6 +16,9 @@ target_link_libraries(PSVR2Camera
     dxgi.lib
 )
 
+install(TARGETS MyExecutable DESTINATION bin)
+install(FILES README.md DESTINATION .)
+
 set(CPACK_PACKAGE_NAME "PSVR2Camera")
 set(CPACK_PACKAGE_VERSION "0.2.0")
 set(CPACK_GENERATOR "ZIP")

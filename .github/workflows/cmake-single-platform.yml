@@ -45,6 +45,5 @@ jobs:
     - name: Upload ZIP Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: cmake-package
         path: build/*.zip
         if-no-files-found: error

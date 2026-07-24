@@ -39,12 +39,12 @@ jobs:
 
     - name: Package with CPack
       run: |
-        cd ${{ github.workspace }}/build
+        cd ${{ github.workspace }}/build/Release
         cpack
 
     - name: Upload ZIP Artifact
       uses: actions/upload-artifact@v4
       with:
         name: cmake-package
-        path: ${{ github.workspace }}/build/*.zip
+        path: ${{ github.workspace }}/build/Release/*.zip
         if-no-files-found: error

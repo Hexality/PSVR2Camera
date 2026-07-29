@@ -29,7 +29,7 @@ void setup_shared_memory(SharedMemoryData& data) {
 
         data.imageMemBase = static_cast<char*>(data.pBuf);
 
-        data.hImageEvent = OpenEventA(SYNCHRONIZE, FALSE, EVENT_NAME);
+        data.hImageEvent = OpenEventA(SYNCHRONIZE | EVENT_ALL_ACCESS, FALSE, EVENT_NAME);
         data.hImageMutex = OpenMutexA(SYNCHRONIZE, FALSE, MUTEX_NAME);
 
         if (!data.hImageEvent || !data.hImageMutex) {
@@ -111,6 +111,8 @@ bool get_distortion_config(SharedMemoryData& data, int cameraId, CameraParameter
 bool copy_latest_image_buffer(SharedMemoryData& data, void* leftCameraData, void* rightCameraData, size_t cameraDataSize) {
     if (WaitForSingleObject(data.hImageEvent, INFINITE) != WAIT_OBJECT_0) return false;
     if (WaitForSingleObject(data.hImageMutex, INFINITE) != WAIT_OBJECT_0) return false;
+
+    ResetEvent(data.hImageEvent);
 
     uint32_t latestTimestamp = 0;
     uint32_t latestIndex = 0;
